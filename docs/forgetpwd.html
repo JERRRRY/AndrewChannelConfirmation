@@ -55,12 +55,13 @@
     import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
     const supabase = createClient(
-      'https://your-project-id.supabase.co', // 🔁 Replace with your project URL
-      'public-anon-key'                     // 🔁 Replace with your public anon key
+      'https://pcwtcavccflpkpdntzbb.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjd3RjYXZjY2ZscGtwZG50emJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUyNTE2NzcsImV4cCI6MjA2MDgyNzY3N30.3VQG4HYPpopGty-o8lLOJNsI2-CyuLnT--QPTSMzqC0'  
     )
 
     const url = new URL(window.location.href)
-    const access_token = url.hash.match(/access_token=([^&]*)/)?.[1]
+    const hashParams = new URLSearchParams(url.hash.substring(1))
+    const access_token = hashParams.get("access_token")
 
     if (!access_token) {
       document.getElementById('error').textContent = 'Invalid or expired link.'
@@ -73,9 +74,9 @@
         return
       }
 
-      const { data, error } = await supabase.auth.setSession({ access_token, refresh_token: '' })
-      if (error) {
-        document.getElementById('error').textContent = 'Session error: ' + error.message
+      const { error: sessionError } = await supabase.auth.setSession({ access_token, refresh_token: '' })
+      if (sessionError) {
+        document.getElementById('error').textContent = 'Session error: ' + sessionError.message
         return
       }
 
@@ -85,7 +86,7 @@
         return
       }
 
-      document.getElementById('success').textContent = 'Password successfully updated! You can now log in.'
+      document.getElementById('success').textContent = '✅ Password successfully updated! You may now log in.'
       document.getElementById('error').textContent = ''
     }
   </script>
