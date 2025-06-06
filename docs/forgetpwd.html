@@ -51,54 +51,55 @@
     <p id="success"></p>
   </div>
 
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script>
-  const client = supabase.createClient(
-    'https://pcwtcavccflpkpdntzbb.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjd3RjYXZjY2ZscGtwZG50emJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUyNTE2NzcsImV4cCI6MjA2MDgyNzY3N30.3VQG4HYPpopGty-o8lLOJNsI2-CyuLnT--QPTSMzqC0'
-  );
+  <script>
+    const client = supabase.createClient(
+      'https://pcwtcavccflpkpdntzbb.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjd3RjYXZjY2ZscGtwZG50emJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUyNTE2NzcsImV4cCI6MjA2MDgyNzY3N30.3VQG4HYPpopGty-o8lLOJNsI2-CyuLnT--QPTSMzqC0' 
+    );
 
-  const url = new URL(window.location.href);
-  const hashParams = new URLSearchParams(url.hash.substring(1));
-  const access_token = hashParams.get("access_token");
+    const url = new URL(window.location.href);
+    const hashParams = new URLSearchParams(url.hash.substring(1));
+    const access_token = hashParams.get("access_token");
 
-  if (!access_token) {
-    document.getElementById("error").textContent = "Invalid or expired reset link.";
-  }
-
-  async function resetPassword() {
-    const newPassword = document.getElementById("new-password").value;
-
-    if (!newPassword) {
-      document.getElementById("error").textContent = "Password cannot be empty.";
-      return;
+    if (!access_token) {
+      document.getElementById("error").textContent = "Invalid or expired reset link.";
     }
 
-    const { error: sessionError } = await client.auth.setSession({
-      access_token,
-      refresh_token: ""
-    });
+    async function resetPassword() {
+      const newPassword = document.getElementById("new-password").value;
 
-    if (sessionError) {
-      document.getElementById("error").textContent = "Session error: " + sessionError.message;
-      return;
+      if (!newPassword) {
+        document.getElementById("error").textContent = "Password cannot be empty.";
+        return;
+      }
+
+      // 1. Verify the token and log in the user
+      const { error: loginError } = await client.auth.verifyOtp({
+        type: 'recovery',
+        token: access_token
+      });
+
+      if (loginError) {
+        document.getElementById("error").textContent = "Session error: " + loginError.message;
+        return;
+      }
+
+      // 2. Now update the password
+      const { error: updateError } = await client.auth.updateUser({
+        password: newPassword
+      });
+
+      if (updateError) {
+        document.getElementById("error").textContent = "Update error: " + updateError.message;
+        return;
+      }
+
+      document.getElementById("success").textContent = "✅ Password successfully updated!";
+      document.getElementById("error").textContent = "";
     }
 
-    const { error: updateError } = await client.auth.updateUser({
-      password: newPassword
-    });
-
-    if (updateError) {
-      document.getElementById("error").textContent = "Update error: " + updateError.message;
-      return;
-    }
-
-    document.getElementById("success").textContent = "✅ Password successfully updated!";
-    document.getElementById("error").textContent = "";
-  }
-
-  document.getElementById("btn-reset").addEventListener("click", resetPassword);
-</script>
+    document.getElementById("btn-reset").addEventListener("click", resetPassword);
+  </script>
 </body>
 </html>
