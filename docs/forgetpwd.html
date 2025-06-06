@@ -53,52 +53,52 @@
 
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script>
-    const supabase = supabase.createClient(
-      'https://pcwtcavccflpkpdntzbb.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjd3RjYXZjY2ZscGtwZG50emJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUyNTE2NzcsImV4cCI6MjA2MDgyNzY3N30.3VQG4HYPpopGty-o8lLOJNsI2-CyuLnT--QPTSMzqC0' 
-    );
+<script>
+  const client = supabase.createClient(
+    'https://pcwtcavccflpkpdntzbb.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjd3RjYXZjY2ZscGtwZG50emJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUyNTE2NzcsImV4cCI6MjA2MDgyNzY3N30.3VQG4HYPpopGty-o8lLOJNsI2-CyuLnT--QPTSMzqC0'
+  );
 
-    const url = new URL(window.location.href);
-    const hashParams = new URLSearchParams(url.hash.substring(1));
-    const access_token = hashParams.get("access_token");
+  const url = new URL(window.location.href);
+  const hashParams = new URLSearchParams(url.hash.substring(1));
+  const access_token = hashParams.get("access_token");
 
-    if (!access_token) {
-      document.getElementById("error").textContent = "Invalid or expired reset link.";
+  if (!access_token) {
+    document.getElementById("error").textContent = "Invalid or expired reset link.";
+  }
+
+  async function resetPassword() {
+    const newPassword = document.getElementById("new-password").value;
+
+    if (!newPassword) {
+      document.getElementById("error").textContent = "Password cannot be empty.";
+      return;
     }
 
-    async function resetPassword() {
-      const newPassword = document.getElementById("new-password").value;
+    const { error: sessionError } = await client.auth.setSession({
+      access_token,
+      refresh_token: ""
+    });
 
-      if (!newPassword) {
-        document.getElementById("error").textContent = "Password cannot be empty.";
-        return;
-      }
-
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token,
-        refresh_token: ""
-      });
-
-      if (sessionError) {
-        document.getElementById("error").textContent = "Session error: " + sessionError.message;
-        return;
-      }
-
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: newPassword
-      });
-
-      if (updateError) {
-        document.getElementById("error").textContent = "Update error: " + updateError.message;
-        return;
-      }
-
-      document.getElementById("success").textContent = "✅ Password successfully updated!";
-      document.getElementById("error").textContent = "";
+    if (sessionError) {
+      document.getElementById("error").textContent = "Session error: " + sessionError.message;
+      return;
     }
 
-    document.getElementById("btn-reset").addEventListener("click", resetPassword);
-  </script>
+    const { error: updateError } = await client.auth.updateUser({
+      password: newPassword
+    });
+
+    if (updateError) {
+      document.getElementById("error").textContent = "Update error: " + updateError.message;
+      return;
+    }
+
+    document.getElementById("success").textContent = "✅ Password successfully updated!";
+    document.getElementById("error").textContent = "";
+  }
+
+  document.getElementById("btn-reset").addEventListener("click", resetPassword);
+</script>
 </body>
 </html>
