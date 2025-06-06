@@ -61,6 +61,7 @@
     const url = new URL(window.location.href);
     const hashParams = new URLSearchParams(url.hash.substring(1));
     const access_token = hashParams.get("access_token");
+    const email = hashParams.get("email");
 
     if (!access_token) {
       document.getElementById("error").textContent = "Invalid or expired reset link.";
@@ -77,7 +78,8 @@
       // 1. Verify the token and log in the user
       const { error: loginError } = await client.auth.verifyOtp({
         type: 'recovery',
-        token: access_token
+        token: access_token,
+        email: email
       });
 
       if (loginError) {
